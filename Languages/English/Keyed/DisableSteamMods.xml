@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <DisableSteamMods_SettingsCategory>Disable Steam Mods</DisableSteamMods_SettingsCategory>
+    <DisableSteamMods_EnableWhitelist>Enable whitelist</DisableSteamMods_EnableWhitelist>
+    <DisableSteamMods_EnableWhitelistTooltip>When enabled, only Workshop mods with package IDs in the whitelist are allowed.</DisableSteamMods_EnableWhitelistTooltip>
+    <DisableSteamMods_WhitelistedModKeys>Whitelisted package IDs</DisableSteamMods_WhitelistedModKeys>
+    <DisableSteamMods_EnableBlacklist>Enable blacklist</DisableSteamMods_EnableBlacklist>
+    <DisableSteamMods_EnableBlacklistTooltip>When enabled, Workshop mods with package IDs in the blacklist are blocked.</DisableSteamMods_EnableBlacklistTooltip>
+    <DisableSteamMods_BlacklistedModKeys>Blacklisted package IDs</DisableSteamMods_BlacklistedModKeys>
+    <DisableSteamMods_RemoveOnlyLocalDuplicates>Only remove Workshop mods with a local version</DisableSteamMods_RemoveOnlyLocalDuplicates>
+    <DisableSteamMods_RemoveOnlyLocalDuplicatesTooltip>When enabled, Workshop mods are only filtered out if a local mod with the same package ID exists in the local Mods folder.</DisableSteamMods_RemoveOnlyLocalDuplicatesTooltip>
+    <DisableSteamMods_ModKeyHelp>Use comma, space, or newline separated RimWorld package IDs. One package ID per line is easiest to read. Wildcards are supported, for example nemuruyama.*. The default whitelist contains nemuruyama.disablesteammods and zetrith.prepatcher.</DisableSteamMods_ModKeyHelp>
+    <DisableSteamMods_RestartGame>Restart game</DisableSteamMods_RestartGame>
+</LanguageData>
