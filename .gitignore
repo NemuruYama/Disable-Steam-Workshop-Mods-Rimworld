@@ -1,0 +1,5 @@
+bin/
+obj/
+Workshop/
+*.zip
+*.pdb

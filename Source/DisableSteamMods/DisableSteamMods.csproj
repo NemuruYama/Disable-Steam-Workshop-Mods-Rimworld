@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <RootNamespace>DisableSteamMods</RootNamespace>
+        <AssemblyName>DisableSteamMods</AssemblyName>
+        <OutputPath>..\..\1.6\Assemblies\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <Deterministic>true</Deterministic>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.3.0" />
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4566" />
+        <PackageReference Include="Lib.Harmony" Version="2.4.2" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="Zetrith.Prepatcher" Version="1.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- VS Code/OmniSharp sometimes misses the package compile asset after Publicizer rewrites it. -->
+        <Reference Include="0Harmony">
+            <HintPath>$(NuGetPackageRoot)lib.harmony\2.4.2\lib\net48\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Publicize Include="0Harmony" />
+    </ItemGroup>
+
+    <!-- Ignore system framework assemblies and use RimWorld references from Krafs.Rimworld.Ref. -->
+    <Target Name="RemoveFramework" BeforeTargets="PrepareForBuild" DependsOnTargets="GetReferenceAssemblyPaths">
+        <PropertyGroup>
+            <TargetFrameworkDirectory></TargetFrameworkDirectory>
+        </PropertyGroup>
+    </Target>
+</Project>
