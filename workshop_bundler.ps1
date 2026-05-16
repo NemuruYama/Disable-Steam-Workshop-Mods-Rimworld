@@ -63,6 +63,10 @@ $vdf = @"
     "title" "$($about.ModMetaData.name)"
     "description" "$escapedDescription"
     "changenote" "$escapedChangeNote"
+    "tags"
+    {
+        "0" "Mod"
+    }
 }
 "@
 
