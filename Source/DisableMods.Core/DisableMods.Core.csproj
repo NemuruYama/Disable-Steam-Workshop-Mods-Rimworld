@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <RootNamespace>DisableMods.Core</RootNamespace>
+        <AssemblyName>DisableMods.Core</AssemblyName>
+        <Deterministic>true</Deterministic>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4566" />
+    </ItemGroup>
+
+    <Target Name="RemoveFramework" BeforeTargets="PrepareForBuild" DependsOnTargets="GetReferenceAssemblyPaths">
+        <PropertyGroup>
+            <TargetFrameworkDirectory></TargetFrameworkDirectory>
+        </PropertyGroup>
+    </Target>
+</Project>

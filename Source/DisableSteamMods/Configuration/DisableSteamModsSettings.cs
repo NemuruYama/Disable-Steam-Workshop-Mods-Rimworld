@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml.Linq;
+using DisableMods.Core;
 using Verse;
 
 namespace DisableSteamMods.Configuration;
@@ -13,7 +13,10 @@ public sealed class DisableSteamModsSettings : ModSettings
     private const string DisableSteamModsPackageId = "nemuruyama.disablesteammods";
     private const string PrepatcherPackageId = "zetrith.prepatcher";
     private const string ModHandleName = "DisableSteamModsMod";
-    private static readonly OwnModInfo OwnMod = FindOwnMod();
+    private static readonly OwnModInfo OwnMod = OwnModFinder.FindOwnMod(
+        typeof(DisableSteamModsSettings).Assembly,
+        "[DisableSteamMods]"
+    );
     private static DateTime cachedLocalPackageIdsWriteTimeUtc;
     private static HashSet<string>? cachedLocalPackageIds;
     private static DisableSteamModsSettings? current;
@@ -34,7 +37,7 @@ public sealed class DisableSteamModsSettings : ModSettings
         Environment.NewLine,
         new[] { SelfPackageIdForDefaultWhitelist, PrepatcherPackageId }
             .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Select(NormalizeModKey)
+            .Select(ModKeyMatcher.Normalize)
             .Distinct());
 
     public static DisableSteamModsSettings Current => current ??= ReadSettingsForEarlyFilter();
@@ -63,7 +66,7 @@ public sealed class DisableSteamModsSettings : ModSettings
             return RemoveOnlyWhenLocalVersionExists;
         }
 
-        var packageId = NormalizeModKey(mod.PackageId);
+        var packageId = ModKeyMatcher.Normalize(mod.PackageId);
         if (RemoveOnlyWhenLocalVersionExists && !LocalPackageIds.Contains(packageId))
         {
             return true;
@@ -74,12 +77,12 @@ public sealed class DisableSteamModsSettings : ModSettings
             return false;
         }
 
-        if (WhitelistEnabled && !MatchesModKey(Whitelist, packageId))
+        if (WhitelistEnabled && !ModKeyMatcher.Matches(Whitelist, packageId))
         {
             return false;
         }
 
-        return !BlacklistEnabled || !MatchesModKey(Blacklist, packageId);
+        return !BlacklistEnabled || !ModKeyMatcher.Matches(Blacklist, packageId);
     }
 
     public void NotifyChanged()
@@ -136,61 +139,7 @@ public sealed class DisableSteamModsSettings : ModSettings
         blacklist = null;
     }
 
-    private static List<string> ParseModKeys(string rawKeys)
-    {
-        var separators = new[] { ',', ';', ' ', '\r', '\n', '\t' };
-        return (rawKeys ?? string.Empty)
-            .Split(separators, StringSplitOptions.RemoveEmptyEntries)
-            .Select(NormalizeModKey)
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Distinct()
-            .ToList();
-    }
-
-    private static bool MatchesModKey(IEnumerable<string> patterns, string packageId)
-    {
-        return patterns.Any(pattern => MatchesModKey(pattern, packageId));
-    }
-
-    private static bool MatchesModKey(string pattern, string packageId)
-    {
-        if (pattern == packageId || pattern == "*")
-        {
-            return true;
-        }
-
-        var wildcardIndex = pattern.IndexOf('*');
-        if (wildcardIndex < 0)
-        {
-            return false;
-        }
-
-        var currentIndex = 0;
-        var firstSegment = true;
-        foreach (var segment in pattern.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var segmentIndex = packageId.IndexOf(segment, currentIndex, StringComparison.Ordinal);
-            if (segmentIndex < 0)
-            {
-                return false;
-            }
-
-            if (firstSegment && wildcardIndex > 0 && segmentIndex != 0)
-            {
-                return false;
-            }
-
-            currentIndex = segmentIndex + segment.Length;
-            firstSegment = false;
-        }
-
-        if (!pattern.EndsWith("*", StringComparison.Ordinal) && currentIndex != packageId.Length)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    private static List<string> ParseModKeys(string rawKeys) => ModKeyMatcher.ParsePatterns(rawKeys).ToList();
 
     private static HashSet<string> LoadLocalPackageIds(string modsFolderPath)
     {
@@ -202,7 +151,7 @@ public sealed class DisableSteamModsSettings : ModSettings
         return Directory.GetDirectories(modsFolderPath)
             .Select(ReadPackageId)
             .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Select(NormalizeModKey)
+            .Select(ModKeyMatcher.Normalize)
             .ToHashSet();
     }
 
@@ -225,57 +174,6 @@ public sealed class DisableSteamModsSettings : ModSettings
         }
     }
 
-    private static OwnModInfo FindOwnMod()
-    {
-        var assemblyPath = Assembly.GetExecutingAssembly().Location;
-        if (string.IsNullOrWhiteSpace(assemblyPath))
-        {
-            return OwnModInfo.Empty;
-        }
-
-        for (var directory = Directory.GetParent(assemblyPath); directory != null; directory = directory.Parent)
-        {
-            var aboutPath = Path.Combine(directory.FullName, "About", "About.xml");
-            if (!File.Exists(aboutPath))
-            {
-                continue;
-            }
-
-            try
-            {
-                var packageId = XDocument.Load(aboutPath).Root?.Element("packageId")?.Value ?? string.Empty;
-                return new OwnModInfo(directory.Name, packageId);
-            }
-            catch (Exception exception)
-            {
-                Log.Warning("[DisableSteamMods] Could not read own package ID from " + aboutPath + ". " + exception.Message);
-                return new OwnModInfo(directory.Name, string.Empty);
-            }
-        }
-
-        Log.Warning("[DisableSteamMods] Could not find own About.xml while building the default whitelist.");
-        return OwnModInfo.Empty;
-    }
-
-    private static string NormalizeModKey(string value)
-    {
-        return (value ?? string.Empty).Trim().ToLowerInvariant();
-    }
-
-    private readonly struct OwnModInfo
-    {
-        public static readonly OwnModInfo Empty = new(string.Empty, string.Empty);
-
-        public OwnModInfo(string folderName, string packageId)
-        {
-            FolderName = folderName;
-            PackageId = packageId;
-        }
-
-        public string FolderName { get; }
-
-        public string PackageId { get; }
-    }
 }
 
 public readonly struct WorkshopModIdentity

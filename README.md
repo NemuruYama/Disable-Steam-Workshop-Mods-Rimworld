@@ -16,6 +16,7 @@ The mod allows its own Workshop copy and its dependency to remain visible throug
 
 The mod uses a Prepatcher assembly rewrite pass against RimWorld's main assembly.
 It patches `Verse.Steam.WorkshopItems.AllSubscribedItems` so subscribed Workshop items are filtered before RimWorld builds its mod list.
+Shared package ID and source filtering helpers live in `DisableMods.Core` so other local mods can use the same discovery rules without requiring Disable Steam Mods to be enabled.
 
 Runtime Harmony patches are not used for the Workshop suppression path.
 
